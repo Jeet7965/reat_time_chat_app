@@ -1,0 +1,114 @@
+
+
+
+.main-container {
+ 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Card Container */
+.container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.card {
+  background: #fff;
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+/* Title */
+.card-title h1 {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  color: #25D366; /* WhatsApp green */
+  font-weight: 600;
+}
+
+/* Form */
+.forms form {
+  display: flex;
+  flex-direction: column;
+}
+
+.forms .column {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.forms input {
+  padding: 0.9rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 30px;
+  outline: none;
+  font-size: 1rem;
+  transition: 0.3s;
+  width: 100%;
+}
+
+.forms input:focus {
+  border-color: #25D366;
+  box-shadow: 0 0 5px rgba(37, 211, 102, 0.5);
+}
+
+/* Button */
+.forms button {
+  padding: 0.9rem;
+  border: none;
+  border-radius: 30px;
+  background: #25D366;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.forms button:hover {
+  background: #20b955;
+}
+
+/* Bottom Link */
+.card-items {
+  margin-top: 1.2rem;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.card-items a {
+  color: #25D366;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.card-items a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  .card {
+    padding: 1.5rem;
+  }
+
+  .forms .column {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .forms input, 
+  .forms button {
+    font-size: 0.95rem;
+  }
+}

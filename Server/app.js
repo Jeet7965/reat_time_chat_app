@@ -3,7 +3,7 @@ import express from "express";
 import connectDB from "./config/dbConfig.js";
 import userModel from './models/userModel.js'
 import bycrypt from 'bcryptjs'
-
+import cors from 'cors';
 import jwt from 'jsonwebtoken'
 import verifyAuth from "./middleware/authmiddleware.js";
 import chatModel from "./models/chatModel.js";
@@ -11,12 +11,21 @@ import chatModel from "./models/chatModel.js";
 import msgModel from './models/messageModel.js'
 
 // Load env variables
-dotenv.config({ path: "./config.env" });
+
+
 
 const app = express();
 
+dotenv.config({ path: "./config.env" });
+
+app.use(cors({
+    origin: 'http://localhost:5173', // frontend URL
+    credentials: true               // if you want to send cookies/auth headers
+}));
+
 // Connect to DB
 connectDB();
+
 app.use(express.json());
 
 //sinup  
@@ -26,7 +35,7 @@ app.post("/api/singup", async (req, resp) => {
         const users = await userModel.findOne({ email: req.body.email })
         if (users) {
 
-            return resp.status(404).send({
+            return resp.send({
                 message: "User already exists",
                 success: false
 
@@ -38,7 +47,7 @@ app.post("/api/singup", async (req, resp) => {
 
         const newuser = new userModel(req.body)
         await newuser.save()
-        resp.status(201).send({
+        resp.send({
             message: "User created successfully",
             success: true
 
@@ -60,7 +69,7 @@ app.post("/api/singup", async (req, resp) => {
 app.post("/api/login", async (req, resp) => {
 
     try {
-        const users = await userModel.findOne({ email: req.body.email })
+        const users = await userModel.findOne({ email: req.body.email }).select("+password");
         if (!users) {
 
             return resp.send({
@@ -70,9 +79,8 @@ app.post("/api/login", async (req, resp) => {
             })
         }
         const pass = await bycrypt.compare(req.body.password, users.password);
-
         if (!pass) {
-            return resp.status(400).send({
+            return resp.send({
                 message: "Ivailid password",
                 success: false
 
@@ -86,7 +94,7 @@ app.post("/api/login", async (req, resp) => {
 
         })
     } catch (error) {
-        resp.status(400).send({
+        resp.send({
             message: error.message,
             success: false
 
@@ -115,7 +123,7 @@ app.get("/user/logedin", verifyAuth, async (req, resp) => {
         })
 
     } catch (error) {
-        resp.status(400).send({
+        resp.send({
             message: error.message,
             success: false
 
@@ -134,7 +142,7 @@ app.get("/user/alluser", verifyAuth, async (req, resp) => {
 
         // resp.send("User Login")
 
-        resp.status(200).send({
+        resp.send({
             message: " All user Fetch successfully",
             success: true,
             data: Allusers
@@ -159,7 +167,7 @@ app.post("/chat/create", verifyAuth, async (req, resp) => {
         const chat = new chatModel(req.body);
         const savechat = await chat.save();
         console.log(savechat)
-        resp.status(201).send({
+        resp.send({
             message: "chat Created Successfully",
             success: true,
             data: savechat
@@ -182,7 +190,7 @@ app.get("/chat/get-all-chats", verifyAuth, async (req, resp) => {
         const AllChat = await chatModel.find({ members: { $in: req.userId } });
 
         console.log(AllChat)
-        resp.status(200).send({
+        resp.send({
             message: "  all  chat Successfully",
             success: true,
             data: AllChat
@@ -213,12 +221,12 @@ app.post("/message/new-message", verifyAuth, async (req, resp) => {
         const currentChat = await chatModel.findOneAndUpdate({
             _id: req.body.chatId
         }, {
-            lastMessage:saveMsg._id,
-            $inc: {unreadMessage: 1 }
+            lastMessage: saveMsg._id,
+            $inc: { unreadMessage: 1 }
         })
 
         console.log(saveMsg)
-        resp.status(201).send({
+        resp.send({
             message: " Massage  send  Successfully",
             success: true,
             data: saveMsg
@@ -226,7 +234,7 @@ app.post("/message/new-message", verifyAuth, async (req, resp) => {
 
     } catch (error) {
 
-        resp.status(404).send({
+        resp.send({
             message: error.message,
             success: false
 
@@ -235,21 +243,21 @@ app.post("/message/new-message", verifyAuth, async (req, resp) => {
 })
 
 
-app.get("/message/get-all-message/:chatId", verifyAuth, async(req,resp)=>{
+app.get("/message/get-all-message/:chatId", verifyAuth, async (req, resp) => {
     try {
-        
-        const allmsg= await msgModel.find({chatId:req.params.chatId}).sort({createdAt:1});
+
+        const allmsg = await msgModel.find({ chatId: req.params.chatId }).sort({ createdAt: 1 });
 
         console.log(allmsg)
         resp.send({
-            message:"Message fetched successfully",
-            success:true,
-            data:allmsg
+            message: "Message fetched successfully",
+            success: true,
+            data: allmsg
         })
 
     } catch (error) {
-        
-         resp.status(404).send({
+
+        resp.send({
             message: error.message,
             success: false
 
