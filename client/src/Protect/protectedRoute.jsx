@@ -1,13 +1,22 @@
 import { Fragment, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
+
+import { setUser, setAllUsers } from '../redux/userSlice'
+
 
 function ProtectRoute({ children }) {
   const navigate = useNavigate();
-  const [userdata, setUserData] = useState(null);
+ 
   const [loading, setLoading] = useState(true);
 
+  const { user } = useSelector((state => state.userReducer))
+
+  const dispatch = useDispatch()
   const getLoggedUser = async () => {
     try {
+
       const response = await fetch("http://localhost:3200/user/logedin", {
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("token")}`
@@ -17,39 +26,76 @@ function ProtectRoute({ children }) {
       const result = await response.json();
 
       if (result.success) {
-        setUserData(result.data);
+        dispatch(setUser(result.data));
+
+
       } else {
+        toast.error(result.message);
         navigate("/login");
       }
     } catch (error) {
+      toast.error(error.message);
       navigate("/login");
+
     } finally {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     if (!localStorage.getItem("token")) {
       navigate("/login");
     } else {
       getLoggedUser();
+      getAllUsers();
     }
   }, [navigate]);
 
   if (loading) return <p>Loading...</p>;
 
+
+
+
+
+  async function getAllUsers() {
+    try {
+      const response = await fetch("http://localhost:3200/user/alluser", {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        }
+      })
+      const result = await response.json();
+      console.log(result)
+      if (result.success) {
+        dispatch(setAllUsers(result.data));
+      } else {
+        toast.error(result.message);
+        navigate("/login");
+      }
+
+    } catch (error) {
+      toast.error(error.message);
+      navigate("/login");
+
+    } finally {
+      setLoading(false);
+    }
+
+  }
+
   return (
     <Fragment>
-      {userdata && (
-       <div>
-         <p>
-          Name: {userdata.firstname} {userdata.lastname}
-        </p>
-         <p>
-          Email: {userdata.email}
-        </p>
-       </div>
-      )}
+      {/* {user && (
+        <div>
+          <p>
+            Name: {user.firstname} {user.lastname}
+          </p>
+          <p>
+            Email: {user.email}
+          </p>
+        </div>
+      )} */}
       {children}
     </Fragment>
   );

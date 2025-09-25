@@ -5,22 +5,26 @@ import { useState } from 'react';
 
 import toast from 'react-hot-toast';
 
+
 function Login() {
 
+
     const navigate = useNavigate()
+
     const [user, setUser] = useState({ email: '', password: '' });
 
     const handleLoginForm = async (event) => {
 
         event.preventDefault();
         try {
+
             const response = await fetch("http://localhost:3200/api/login", {
                 method: 'Post',
                 body: JSON.stringify(user),
                 headers: { "Content-Type": "application/json" },
                 credentials: "include"
-
             })
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -38,7 +42,7 @@ function Login() {
             }
         } catch (error) {
 
-     
+
             toast.error(error.response?.data?.error || error.message);
         }
     }

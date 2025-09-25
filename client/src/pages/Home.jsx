@@ -1,26 +1,25 @@
 import React, { useEffect, useState } from 'react'
+import Header from './home/Header'
+
+import '../assets/css/home.css'
+
+import Sidebar from './home/sidebar'
 
 function Home() {
 
     const [userdata, setUserdata] = useState()
-    // useEffect(() => {
-    //     getLoggedUser()
-    // }, [])
 
-    // async function getLoggedUser(params) {
-    //     try {
-    //         const response = await fetch("http://localhost:3200/user/alluser", {
-    //             credentials: "include"
-    //         })
-    //         const data= await response.json()
-    //         console.log(data)
-    //     } catch (error) {
-
-    //     }
-    // }
 
     return (
-        <div>Home</div>
+        <>
+            <Header></Header>
+            <div className="home-page">
+                <Sidebar></Sidebar>
+
+            </div>
+
+
+        </>
     )
 }
 

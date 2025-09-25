@@ -1,15 +1,22 @@
-import React, { useState } from 'react'
+
 import '../assets/css/form.css'
 import { Link, useNavigate } from 'react-router';
 import { singupUser } from '../apiCalls/auth.js';
 import toast from 'react-hot-toast';
+
+
 function Singup() {
+
 const navigate=useNavigate();
+
+
+
   const [user, setUser] = useState({ firstname: '', lastname: '', email: '', password: '' });
 
   const handleSingupForm = async (event) => {
     event.preventDefault();
     try {
+
       const resp = await fetch("http://localhost:3200/api/singup", {
         method: 'Post',
         body: JSON.stringify(user),
@@ -17,6 +24,7 @@ const navigate=useNavigate();
         credentials:"include"
 
       })
+  
       if (!resp.ok) {
         throw new Error(`HTTP error! status: ${resp.status}`);
       }
