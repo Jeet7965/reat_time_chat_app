@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 
-import { setUser, setAllUsers } from '../redux/userSlice'
+import { setUser, setAllUsers,setAllChats } from '../redux/userSlice'
 
 
 function ProtectRoute({ children }) {
@@ -49,6 +49,7 @@ function ProtectRoute({ children }) {
     } else {
       getLoggedUser();
       getAllUsers();
+      getAllChats()
     }
   }, [navigate]);
 
@@ -69,6 +70,31 @@ function ProtectRoute({ children }) {
       console.log(result)
       if (result.success) {
         dispatch(setAllUsers(result.data));
+      } else {
+        toast.error(result.message);
+        navigate("/login");
+      }
+
+    } catch (error) {
+      toast.error(error.message);
+      navigate("/login");
+
+    } finally {
+      setLoading(false);
+    }
+
+  }
+  async function getAllChats() {
+    try {
+      const response = await fetch("http://localhost:3200/chat/get-all-chats", {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        }
+      })
+      const result = await response.json();
+      console.log(result)
+      if (result.success) {
+        dispatch(setAllChats(result.data));
       } else {
         toast.error(result.message);
         navigate("/login");

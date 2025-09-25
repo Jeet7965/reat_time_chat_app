@@ -187,7 +187,7 @@ app.post("/chat/create", verifyAuth, async (req, resp) => {
 app.get("/chat/get-all-chats", verifyAuth, async (req, resp) => {
 
     try {
-        const AllChat = await chatModel.find({ members: { $in: req.userId } });
+        const AllChat = await chatModel.find({ members: { $in: req.userId } }).populate('members');
 
         console.log(AllChat)
         resp.send({
@@ -214,9 +214,7 @@ app.post("/message/new-message", verifyAuth, async (req, resp) => {
         const saveMsg = await newMsg.save()
 
 
-        // const currentChat = chatModel.findById(req.body.chatId)
-        // currentChat.lastMessage = saveMsg._id;
-        // await currentChat.save()
+       
 
         const currentChat = await chatModel.findOneAndUpdate({
             _id: req.body.chatId

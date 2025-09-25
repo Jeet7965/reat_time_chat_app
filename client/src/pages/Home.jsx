@@ -4,18 +4,18 @@ import Header from './home/Header'
 import '../assets/css/home.css'
 
 import Sidebar from './home/sidebar'
+import Chat from './home/Chat'
+
 
 function Home() {
-
-    const [userdata, setUserdata] = useState()
-
-
     return (
         <>
             <Header></Header>
             <div className="home-page">
                 <Sidebar></Sidebar>
+                <hr />
 
+                <Chat></Chat>
             </div>
 
 

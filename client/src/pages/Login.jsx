@@ -41,12 +41,9 @@ function Login() {
                 toast.error(data.message || "Login  failed");
             }
         } catch (error) {
-
-
             toast.error(error.response?.data?.error || error.message);
         }
     }
-
     return (
         <>
             <div className="container">
