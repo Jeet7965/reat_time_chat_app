@@ -5,9 +5,12 @@ import '../assets/css/home.css'
 
 import Sidebar from './home/sidebar'
 import Chat from './home/Chat'
+import { useSelector } from 'react-redux'
 
 
 function Home() {
+ const { selectedChat} = useSelector(state => state.userReducer)
+
     return (
         <>
             <Header></Header>

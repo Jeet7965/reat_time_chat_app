@@ -187,9 +187,11 @@ app.post("/chat/create", verifyAuth, async (req, resp) => {
 app.get("/chat/get-all-chats", verifyAuth, async (req, resp) => {
 
     try {
-        const AllChat = await chatModel.find({ members: { $in: req.userId } }).populate('members');
+        const AllChat = await chatModel.find({ members: { $in: req.userId } }).populate('members')
+            .populate('lastMessage')
+            .sort({ updateAt: -1 });
 
-        console.log(AllChat)
+        // console.log(AllChat)
         resp.send({
             message: "  all  chat Successfully",
             success: true,
@@ -214,7 +216,7 @@ app.post("/message/new-message", verifyAuth, async (req, resp) => {
         const saveMsg = await newMsg.save()
 
 
-       
+
 
         const currentChat = await chatModel.findOneAndUpdate({
             _id: req.body.chatId
@@ -223,7 +225,7 @@ app.post("/message/new-message", verifyAuth, async (req, resp) => {
             $inc: { unreadMessage: 1 }
         })
 
-        console.log(saveMsg)
+        // console.log(saveMsg).
         resp.send({
             message: " Massage  send  Successfully",
             success: true,
@@ -246,7 +248,7 @@ app.get("/message/get-all-message/:chatId", verifyAuth, async (req, resp) => {
 
         const allmsg = await msgModel.find({ chatId: req.params.chatId }).sort({ createdAt: 1 });
 
-        console.log(allmsg)
+        // console.log(allmsg)
         resp.send({
             message: "Message fetched successfully",
             success: true,
@@ -263,6 +265,48 @@ app.get("/message/get-all-message/:chatId", verifyAuth, async (req, resp) => {
     }
 })
 
+app.post("/clear-unread-messages", verifyAuth, async (req,resp) => {
+
+    try {
+
+        const chatId = req.body.chatId;
+     
+        const chat = await chatModel.findById(chatId)
+
+        if (!chat) {
+            resp.send({
+                message: "No Chat found with the given chat",
+                success: false
+            })
+            return; 
+        }
+
+        const updatedChat = await chatModel.findByIdAndUpdate(
+            chatId,
+            { unreadMessage: 0 },
+            { new: true }).populate('members').populate('lastMessage');
+
+
+        await msgModel.updateMany(
+            {chatId:chatId,read:false},
+            { read:true}
+        )
+
+        resp.send({
+            message:"clear read masssage successfully",
+            success:true,
+            data:updatedChat
+        })
+    } catch (error) {
+
+        resp.send({
+            message: error.message,
+            success: false
+
+        })
+    }
+
+})
 
 app.listen(process.env.PORT_NUMBER, () => {
     console.log(`This app is listening on port: ${process.env.PORT_NUMBER}!`);

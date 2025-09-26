@@ -7,7 +7,7 @@ members:{
     ]
 },
 lastMessage:{
-    type:mongoose.Schema.Types.ObjectId,ref:"messges"
+    type:mongoose.Schema.Types.ObjectId,ref:"messages"
 },
 unreadMessage:{
     type:Number,

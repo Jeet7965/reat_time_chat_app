@@ -3,7 +3,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { setAllChats, setSelectedChats } from "../../redux/userSlice.js";
 import toast from 'react-hot-toast';
 
-import { createNewChat } from "../../apiCalls/auth.js";
+import { createNewChat } from "../../apiCalls/chat.js";
+import moment from 'moment';
 
 function UsersList({ searchKey }) {
 
@@ -28,7 +29,7 @@ function UsersList({ searchKey }) {
                 toast.error(response.message || "Chat creation failed");
             }
         } catch (error) {
-           toast.error(error.response?.data?.error || error.message);
+            toast.error(error.response?.data?.error || error.message);
         }
     }
 
@@ -46,9 +47,6 @@ function UsersList({ searchKey }) {
             // If no chat exists, maybe create a new one?
             // StartNewChat(selectedUserId);
         }
-
-
-
     }
 
 
@@ -59,18 +57,67 @@ function UsersList({ searchKey }) {
         else false;
     }
 
+
+    function getLastMessage(userId) {
+        const chat = allChats.find(chat => chat.members.map(m => m._id).includes(userId))
+        console.log("User:", userId, "Chat:", chat);
+        if (!chat || !chat.lastMessage) {
+            return null
+        } else {
+
+            const msgPrefix = chat?.lastMessage?.sender === CurrentUser._id ? " you " : " "
+            return msgPrefix + chat?.lastMessage?.text?.substring(0, 20);
+
+        }
+    }
+
+    function getLastMessageTime(userId) {
+        const chat = allChats.find(chat => chat.members.map(m => m._id).includes(userId))
+
+        if (!chat && chat.lastMessage) {
+            return null
+        } else {
+            return moment(chat?.lastMessage?.createdAt).format('hh:mm A');
+           
+        }
+    }
+
+    function getUnreadMsg(userId) {
+        const chat = allChats.find(chat => chat.members.map(m => m._id).includes(userId));
+        if (chat && chat.unreadMessage && chat.lastMessage.sender !== CurrentUser._id) {
+            return chat.unreadMessage
+        } else {
+            return null
+        }
+    }
+
+    // function getData() {
+    //     if (searchKey === " ") {
+    //         return allChats;
+    //     }
+    //     else {
+    //         allUsers.filter(userItem => {
+    //             const key = searchKey.toLowerCase();
+    //             return (
+    //                 (userItem.firstname.toLowerCase().includes(key) ||
+    //                     userItem.lastname.toLowerCase().includes(key)) && key.trim())
+    //         })
+    //     }
+    // }
+   
     return (
         allUsers
             .filter(userItem => {
                 const key = searchKey.toLowerCase();
                 return (
                     (userItem.firstname.toLowerCase().includes(key) ||
-                        userItem.lastname.toLowerCase().includes(key)) && key
-                ) || (
-                        allChats.some(chat => chat.members.map(m => m._id).includes(userItem._id))
-                    )
-            })
-            .map((userItem) => {
+                     userItem.lastname.toLowerCase().includes(key)) && key) ||
+                         ( allChats.some(chat => chat.members.map(m => m._id).includes(userItem._id)) )
+            }).map( obj => {
+                  let  userItem =obj;
+                  if (obj.members) {
+                    userItem =obj.members.find(mem=>mem._id !==CurrentUser._id)
+                  }
                 return (
                     <div className="user-card" key={userItem._id} onClick={() => openChat(userItem._id)}>
                         <div className={IsSelectedChat(userItem) ? "selected-user" : "user-info"}>
@@ -84,8 +131,12 @@ function UsersList({ searchKey }) {
                             </div>
                             <div className="user-details">
                                 <span className="name">{userItem.firstname} {userItem.lastname}</span>
-                                <span className="email">{userItem.email}</span>
+                                <span className="email">{getLastMessage(userItem._id) || userItem.email}</span>
+
+                                <span className="email">{getLastMessageTime(userItem._id)}</span>
+                                <span className="email"> {getUnreadMsg(userItem._id) ? "unread:" + getUnreadMsg(userItem._id) : " "}</span>
                             </div>
+
                         </div>
                         {
                             !allChats.find(chat =>

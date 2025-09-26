@@ -1,7 +1,7 @@
 
 import '../assets/css/form.css'
 import { Link, useNavigate } from 'react-router';
-import { singupUser } from '../apiCalls/auth.js';
+
 import toast from 'react-hot-toast';
 
 
