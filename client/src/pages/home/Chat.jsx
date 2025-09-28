@@ -1,26 +1,75 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { createNewMessage, getAllMessage } from '../../apiCalls/message.js';
-// import { getAllMessage } from '../../apiCalls/message.js';
+import { v4 as uuidv4 } from 'uuid';
+import store from '../../redux/store.js'
 import { ClearUnreadmassage } from '../../apiCalls/chat.js';
 import moment from 'moment';
 import toast from 'react-hot-toast';
+import { setAllChats } from '../../redux/userSlice.js';
 
-function Chat() {
+
+
+function Chat({ socket }) {
   const { selectedChat, user, allChats } = useSelector(state => state.userReducer);
   const [message, setMessage] = useState("");
   const [Allmessage, setAllMessage] = useState([]);
 
+
+  const dispatch = useDispatch()
+  const msgContainerRef = useRef(null);
   // Fetch messages when selectedChat changes
   useEffect(() => {
     if (selectedChat && selectedChat._id) {
       getMessage();
- ClearUnreadMsg();
+      ClearUnreadMsg();
+
+      socket.off('receive-message').on('receive-message', data => {
+        const selectedChat = store.getState().userReducer.selectedChat;
+        if (selectedChat._id === data.chatId) {
+
+          setAllMessage(prevmsg => [...prevmsg, data])
+        }
+        if (selectedChat._id === message.chatId && message.sender !== user._id) {
+          ClearUnreadMsg();
+        }
+      })
+      socket.on('message-count-cleared', data => {
+        const selectedChat = store.getState().userReducer.selectedChat;
+        const allChats = store.getState().userReducer.allChats;
+
+
+        if (selectedChat._id === data.chatId) {
+          // Updating unread msg count in chat obj
+
+          const updatedChat = allChats.map(chat => {
+            if (chat._id === data.chatId) {
+
+              return { ...chat, unreadmessage: 0 }
+            }
+            return chat
+          })
+          dispatch(setAllChats(updatedChat));
+          // Updating read msg proprty in msg onj
+          setAllMessage(prevmsg => {
+            return prevmsg.map(msg => {
+              return { ...msg, read: true }
+            })
+          })
+        }
+
+      })
     }
-    // if (selectedChat?.lastMessage?.sender!== user._id) {
-     
-    // }
+
   }, [selectedChat]);
+
+
+  useEffect(() => {
+    if (msgContainerRef.current) {
+      msgContainerRef.current.scrollTop = msgContainerRef.current.scrollHeight;
+    }
+  }, [Allmessage]);
+
 
   // If no selected chat, show a prompt
   if (!selectedChat || !selectedChat.members || selectedChat.members.length === 0) {
@@ -38,7 +87,7 @@ function Chat() {
   async function getMessage() {
     try {
       const response = await getAllMessage(selectedChat._id);
-      console.log("Response from server:", response);
+
 
       if (response.success) {
         setAllMessage(response.data);
@@ -50,11 +99,127 @@ function Chat() {
     }
   }
 
+
+  // async function ClearUnreadMsg() {
+  //   try {
+  //     socket.emit('clear-unread-message', {
+  //       chatId: selectedChat._id,
+  //       members: selectedChat.members.map(m => m._id)
+  //     })
+  //     const response = await ClearUnreadmassage(selectedChat._id);
+  //     if (response.success) {
+  //       const updatedChats = allChats.map(chat => {
+  //         if (chat._id === selectedChat._id) {
+  //           return response.data; // Update chat with the latest data
+  //         }
+  //         return chat;
+  //       });
+  //     } else {
+  //       toast.error(response.message || "Messages could not be clear .");
+  //     }
+  //   } catch (error) {
+  //     toast.error(error.response?.data?.error || error.message);
+  //   }
+  // }
+
+
+
+
+
+
+  // Send a new message
+
+
+  
+  // async function sendMessage() {
+  //   const trimmedMessage = message.trim();
+  //   if (!trimmedMessage) {
+  //     toast.error("Message cannot be empty.");
+  //     return;
+  //   }
+  //   try {
+  //     const newMessage = {
+  //       chatId: selectedChat._id,
+  //       sender: user._id,
+  //       text: trimmedMessage,
+  //     };
+  //     const createdAt = moment().toISOString();
+  //     socket.emit('send-message', {
+  //       ...newMessage,
+  //       members: selectedChat.members.map(m => m._id),
+  //       read: false,
+  //       createdAt: createdAt
+  //     })
+
+  //     const response = await createNewMessage(newMessage);
+
+
+  //     if (response.success) {
+  //       setMessage(""); // Clear the input field
+  //     } else {
+  //       toast.error(response.message || "Message not sent.");
+  //     }
+  //   } catch (error) {
+  //     toast.error(error.response?.data?.error || error.message);
+  //   }
+  // }
+
+
+
+  //Function to clear unread messages in the chat when selected
+
+ 
+ 
+ async function sendMessage() {
+    const trimmedMessage = message.trim();
+    if (!trimmedMessage) {
+        toast.error("Message cannot be empty.");
+        return;
+    }
+    try {
+        const newMessage = {
+            chatId: selectedChat._id,
+            sender: user._id,
+            text: trimmedMessage,
+        };
+        const createdAt = moment().toISOString();
+        socket.emit('send-message', {
+            ...newMessage,
+            members: selectedChat.members.map(m => m._id),
+            read: false,
+            createdAt: createdAt
+        });
+
+        const response = await createNewMessage(newMessage);
+
+        if (response.success) {
+            setMessage(""); // Clear the input field
+
+            // Reorder chats so that the latest chat appears at the top
+            let updatedChats = [...allChats];
+            const latestChat = updatedChats.find(chat => chat._id === selectedChat._id);
+            updatedChats = updatedChats.filter(chat => chat._id !== selectedChat._id);
+            updatedChats = [latestChat, ...updatedChats];
+
+            dispatch(setAllChats(updatedChats)); // Update the Redux store
+        } else {
+            toast.error(response.message || "Message not sent.");
+        }
+    } catch (error) {
+        toast.error(error.response?.data?.error || error.message);
+    }
+}
+
+ 
+ 
   async function ClearUnreadMsg() {
     try {
-      const response = await ClearUnreadmassage(selectedChat._id);
-      console.log("Response from server:", response);
+      socket.emit('clear-unread-message', {
+        chatId: selectedChat._id,
+        members: selectedChat.members.map(m => m._id)
+      });
 
+      const response = await ClearUnreadmassage(selectedChat._id);
       if (response.success) {
         const updatedChats = allChats.map(chat => {
           if (chat._id === selectedChat._id) {
@@ -62,44 +227,17 @@ function Chat() {
           }
           return chat;
         });
+        dispatch(setAllChats(updatedChats)); // Update the Redux store with the cleared unread message count
       } else {
-        toast.error(response.message || "Messages could not be clear .");
+        toast.error(response.message || "Failed to clear unread messages.");
       }
     } catch (error) {
       toast.error(error.response?.data?.error || error.message);
     }
   }
-
-  // Send a new message
-  async function sendMessage() {
-    const trimmedMessage = message.trim();
-    if (!trimmedMessage) {
-      toast.error("Message cannot be empty.");
-      return;
-    }
-    try {
-      const newMessage = {
-        chatId: selectedChat._id,
-        sender: user._id,
-        text: trimmedMessage,
-      };
-      console.log("Sending message payload:", newMessage);
-      const response = await createNewMessage(newMessage);
-      console.log("Response from server:", response);
-
-      if (response.success) {
-        setMessage(""); // Clear the input field
-      } else {
-        toast.error(response.message || "Message not sent.");
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.error || error.message);
-    }
-  }
-
   // Format timestamp for message display
   const formatTime = (timestamp) => {
-    const time = moment.utc(timestamp).local(); // Convert to local time
+    const time = moment.utc(timestamp).local(); // moment will correctly handle ISO format
     const now = moment();
     const diff = now.diff(time, 'days');
 
@@ -111,6 +249,7 @@ function Chat() {
       return time.format("MM D, hh:mm A");
     }
   };
+
 
   return (
     <div className="chat-container">
@@ -128,7 +267,7 @@ function Chat() {
             {selectedUser?.firstname + " " + selectedUser?.lastname}
           </h3>
         </div>
-        <div className="chat-messages" id="chat-messages">
+        <div className="chat-messages" ref={msgContainerRef} id="main-chat-area">
           {Allmessage.length === 0 ? (
             <div className="no-messages">
               <p>No messages yet. Start the conversation!</p>
@@ -137,17 +276,17 @@ function Chat() {
             Allmessage.map((msg) => {
               const isCurrentSender = msg.sender === user._id;
               return (
-                <div key={msg._id}>
+                <div key={msg._id || uuidv4()}>
                   <div className={`message ${isCurrentSender ? 'outgoing' : 'incoming'}`}>
                     {msg.text}
                   </div>
                   <div className="timestamp">{formatTime(msg.createdAt)}
                     <div>
-                      {isCurrentSender && msg.read &&<p>seen</p> }
+                      {isCurrentSender && msg.read && <p>seen</p>}
 
                     </div>
-                     </div>
-                  
+                  </div>
+
                 </div>
               );
             })

@@ -67,7 +67,7 @@ function ProtectRoute({ children }) {
         }
       })
       const result = await response.json();
-      console.log(result)
+      // console.log(result)
       if (result.success) {
         dispatch(setAllUsers(result.data));
       } else {
@@ -92,7 +92,7 @@ function ProtectRoute({ children }) {
         }
       })
       const result = await response.json();
-      console.log(result)
+      // console.log(result)
       if (result.success) {
         dispatch(setAllChats(result.data));
       } else {

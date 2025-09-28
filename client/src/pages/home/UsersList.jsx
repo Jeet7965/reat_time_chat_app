@@ -1,15 +1,52 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { setAllChats, setSelectedChats } from "../../redux/userSlice.js";
 import toast from 'react-hot-toast';
-
+import store from '../../redux/store.js';
 import { createNewChat } from "../../apiCalls/chat.js";
 import moment from 'moment';
 
-function UsersList({ searchKey }) {
+function UsersList({ searchKey,socket }) {
 
     const { allUsers, allChats, user: CurrentUser, selectedChat } = useSelector(state => state.userReducer)
     const dispatch = useDispatch()
+
+
+
+useEffect(() => {
+  socket.on('receive-message', (message) => {
+    const selectedChat = store.getState().userReducer.selectedChat;
+    let allChats = store.getState().userReducer.allChats;
+
+    // Check if the message is in a chat that's not selected
+    if (selectedChat?._id !== message.chatId) {
+      // Update unread message count and last message
+      const updatedChats = allChats.map(chat => {
+        if (chat._id === message.chatId) {
+          return {
+            ...chat,
+            unreadMessage: (chat?.unreadMessage || 0) + 1,
+            lastMessage: message,
+          };
+        }
+        return chat;
+      });
+
+      allChats = updatedChats;
+    }
+
+    // Reorder chats so that the latest chat appears at the top
+    const latestChat = allChats.find(chat => chat._id === message.chatId);
+    const otherChats = allChats.filter(chat => chat._id !== message.chatId);
+    allChats = [latestChat, ...otherChats];
+
+    // Dispatch updated chat list
+    dispatch(setAllChats(allChats));
+  });
+}, []);
+
+
+
 
     if (!allUsers || allUsers.length === 0) return <p>No users found</p>
 
@@ -60,7 +97,7 @@ function UsersList({ searchKey }) {
 
     function getLastMessage(userId) {
         const chat = allChats.find(chat => chat.members.map(m => m._id).includes(userId))
-        console.log("User:", userId, "Chat:", chat);
+        // console.log("User:", userId, "Chat:", chat);
         if (!chat || !chat.lastMessage) {
             return null
         } else {
@@ -74,7 +111,7 @@ function UsersList({ searchKey }) {
     function getLastMessageTime(userId) {
         const chat = allChats.find(chat => chat.members.map(m => m._id).includes(userId))
 
-        if (!chat && chat.lastMessage) {
+        if (!chat && chat?.lastMessage) {
             return null
         } else {
             return moment(chat?.lastMessage?.createdAt).format('hh:mm A');
@@ -90,6 +127,9 @@ function UsersList({ searchKey }) {
             return null
         }
     }
+
+
+
 
     // function getData() {
     //     if (searchKey === " ") {

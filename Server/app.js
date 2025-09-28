@@ -8,20 +8,59 @@ import jwt from 'jsonwebtoken'
 import verifyAuth from "./middleware/authmiddleware.js";
 import chatModel from "./models/chatModel.js";
 
+
 import msgModel from './models/messageModel.js'
+
+import serverHttp from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 
 // Load env variables
 
-
-
 const app = express();
 
+const server = serverHttp.createServer(app);
+const io = new SocketIOServer(server, {
+    cors: {
+        origin: "http://localhost:5173", // your frontend URL
+        methods: ["GET", "POST"],
+        credentials: true, // if you need to send cookies or headers
+    },
+});
 dotenv.config({ path: "./config.env" });
 
 app.use(cors({
     origin: 'http://localhost:5173', // frontend URL
-    credentials: true               // if you want to send cookies/auth headers
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']               // if you want to send cookies/auth headers
 }));
+
+
+
+
+io.on('connection', (socket) => {
+
+    socket.on('join-room', userid => {
+        socket.join(userid);
+        console.log('userId:', userid);
+    });
+    socket.on('send-message', (message)=> {
+       
+        io
+        .to(message.members[0])
+        .to(message.members[1])
+        .emit('receive-message',message)
+      
+    });
+    socket.on('clear-unread-message',data=>{
+        io
+        .to(data.members[0])
+        .to(data.members[1])
+        .emit('message-count-cleared',data)
+    })
+
+});
+
+
 
 // Connect to DB
 connectDB();
@@ -265,12 +304,12 @@ app.get("/message/get-all-message/:chatId", verifyAuth, async (req, resp) => {
     }
 })
 
-app.post("/clear-unread-messages", verifyAuth, async (req,resp) => {
+app.post("/clear-unread-messages", verifyAuth, async (req, resp) => {
 
     try {
 
         const chatId = req.body.chatId;
-     
+
         const chat = await chatModel.findById(chatId)
 
         if (!chat) {
@@ -278,7 +317,7 @@ app.post("/clear-unread-messages", verifyAuth, async (req,resp) => {
                 message: "No Chat found with the given chat",
                 success: false
             })
-            return; 
+            return;
         }
 
         const updatedChat = await chatModel.findByIdAndUpdate(
@@ -288,14 +327,14 @@ app.post("/clear-unread-messages", verifyAuth, async (req,resp) => {
 
 
         await msgModel.updateMany(
-            {chatId:chatId,read:false},
-            { read:true}
+            { chatId: chatId, read: false },
+            { read: true }
         )
 
         resp.send({
-            message:"clear read masssage successfully",
-            success:true,
-            data:updatedChat
+            message: "clear read masssage successfully",
+            success: true,
+            data: updatedChat
         })
     } catch (error) {
 
@@ -308,6 +347,6 @@ app.post("/clear-unread-messages", verifyAuth, async (req,resp) => {
 
 })
 
-app.listen(process.env.PORT_NUMBER, () => {
+server.listen(process.env.PORT_NUMBER, () => {
     console.log(`This app is listening on port: ${process.env.PORT_NUMBER}!`);
 });
