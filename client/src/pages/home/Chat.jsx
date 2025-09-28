@@ -130,7 +130,7 @@ function Chat({ socket }) {
   // Send a new message
 
 
-  
+
   // async function sendMessage() {
   //   const trimmedMessage = message.trim();
   //   if (!trimmedMessage) {
@@ -168,50 +168,50 @@ function Chat({ socket }) {
 
   //Function to clear unread messages in the chat when selected
 
- 
- 
- async function sendMessage() {
+
+
+  async function sendMessage() {
     const trimmedMessage = message.trim();
     if (!trimmedMessage) {
-        toast.error("Message cannot be empty.");
-        return;
+      toast.error("Message cannot be empty.");
+      return;
     }
     try {
-        const newMessage = {
-            chatId: selectedChat._id,
-            sender: user._id,
-            text: trimmedMessage,
-        };
-        const createdAt = moment().toISOString();
-        socket.emit('send-message', {
-            ...newMessage,
-            members: selectedChat.members.map(m => m._id),
-            read: false,
-            createdAt: createdAt
-        });
+      const newMessage = {
+        chatId: selectedChat._id,
+        sender: user._id,
+        text: trimmedMessage,
+      };
+      const createdAt = moment().toISOString();
+      socket.emit('send-message', {
+        ...newMessage,
+        members: selectedChat.members.map(m => m._id),
+        read: false,
+        createdAt: createdAt
+      });
 
-        const response = await createNewMessage(newMessage);
+      const response = await createNewMessage(newMessage);
 
-        if (response.success) {
-            setMessage(""); // Clear the input field
+      if (response.success) {
+        setMessage(""); // Clear the input field
 
-            // Reorder chats so that the latest chat appears at the top
-            let updatedChats = [...allChats];
-            const latestChat = updatedChats.find(chat => chat._id === selectedChat._id);
-            updatedChats = updatedChats.filter(chat => chat._id !== selectedChat._id);
-            updatedChats = [latestChat, ...updatedChats];
+        // Reorder chats so that the latest chat appears at the top
+        let updatedChats = [...allChats];
+        const latestChat = updatedChats.find(chat => chat._id === selectedChat._id);
+        updatedChats = updatedChats.filter(chat => chat._id !== selectedChat._id);
+        updatedChats = [latestChat, ...updatedChats];
 
-            dispatch(setAllChats(updatedChats)); // Update the Redux store
-        } else {
-            toast.error(response.message || "Message not sent.");
-        }
+        dispatch(setAllChats(updatedChats)); // Update the Redux store
+      } else {
+        toast.error(response.message || "Message not sent.");
+      }
     } catch (error) {
-        toast.error(error.response?.data?.error || error.message);
+      toast.error(error.response?.data?.error || error.message);
     }
-}
+  }
 
- 
- 
+
+
   async function ClearUnreadMsg() {
     try {
       socket.emit('clear-unread-message', {
@@ -237,32 +237,42 @@ function Chat({ socket }) {
   }
   // Format timestamp for message display
   const formatTime = (timestamp) => {
-    const time = moment.utc(timestamp).local(); // moment will correctly handle ISO format
-    const now = moment();
-    const diff = now.diff(time, 'days');
+    const time = moment.utc(timestamp).local(); // Convert the timestamp to local time
+    const now = moment(); // Current time
+    const diffInDays = now.diff(time, 'days'); // Difference in days between now and the message time
 
-    if (diff < 1 && now.isSame(time, 'day')) {
+    // If the message was sent today
+    if (diffInDays === 0) {
       return `Today ${time.format("hh:mm A")}`;
-    } else if (time.isSame(now.subtract(1, 'day'), 'day')) {
-      return `Yesterday ${time.format("hh:mm A")}`;
-    } else {
-      return time.format("MM D, hh:mm A");
     }
+
+    // If the message was sent yesterday
+    if (diffInDays === 1) {
+      return `Yesterday ${time.format("hh:mm A")}`;
+    }
+
+    // For messages sent on other days, show the full date
+    return time.format("MM DD , hh:mm A");
   };
 
 
   return (
     <div className="chat-container">
-      {
 
-      }
       <div className="app-chat-area">
         <div className="chat-area-header">
-          <img
-            src="https://placehold.co/40x40/ffffff/000000?text=JD"
-            alt="User Profile"
-            className="chat-profile"
-          />
+
+          <div>
+            {
+              selectedUser.profilePic ? (
+                <img src={selectedUser.profilePic} className="chat-profile" alt="profilepic" />
+              ) : (
+                <div className="flname">
+                  {selectedUser.firstname.charAt(0).toUpperCase() + selectedUser.lastname.charAt(0).toUpperCase()}
+                </div>
+              )
+            }
+          </div>
           <h3 className="chat-title">
             {selectedUser?.firstname + " " + selectedUser?.lastname}
           </h3>

@@ -22,9 +22,13 @@ function Home() {
         <>
             <Header></Header>
             <div className="home-page">
-                <Sidebar socket={socket} ></Sidebar>
+                <div className='sidebar'>
+                    <Sidebar socket={socket} ></Sidebar>
+                </div>
                 <hr />
-                <Chat socket={socket}></Chat>
+               <div className='main-chat'>
+                 <Chat socket={socket}></Chat>
+               </div>
             </div>
         </>
     )

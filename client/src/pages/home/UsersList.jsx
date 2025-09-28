@@ -6,44 +6,44 @@ import store from '../../redux/store.js';
 import { createNewChat } from "../../apiCalls/chat.js";
 import moment from 'moment';
 
-function UsersList({ searchKey,socket }) {
+function UsersList({ searchKey, socket }) {
 
     const { allUsers, allChats, user: CurrentUser, selectedChat } = useSelector(state => state.userReducer)
     const dispatch = useDispatch()
 
 
 
-useEffect(() => {
-  socket.on('receive-message', (message) => {
-    const selectedChat = store.getState().userReducer.selectedChat;
-    let allChats = store.getState().userReducer.allChats;
+    useEffect(() => {
+        socket.on('receive-message', (message) => {
+            const selectedChat = store.getState().userReducer.selectedChat;
+            let allChats = store.getState().userReducer.allChats;
 
-    // Check if the message is in a chat that's not selected
-    if (selectedChat?._id !== message.chatId) {
-      // Update unread message count and last message
-      const updatedChats = allChats.map(chat => {
-        if (chat._id === message.chatId) {
-          return {
-            ...chat,
-            unreadMessage: (chat?.unreadMessage || 0) + 1,
-            lastMessage: message,
-          };
-        }
-        return chat;
-      });
+            // Check if the message is in a chat that's not selected
+            if (selectedChat?._id !== message.chatId) {
+                // Update unread message count and last message
+                const updatedChats = allChats.map(chat => {
+                    if (chat._id === message.chatId) {
+                        return {
+                            ...chat,
+                            unreadMessage: (chat?.unreadMessage || 0) + 1,
+                            lastMessage: message,
+                        };
+                    }
+                    return chat;
+                });
 
-      allChats = updatedChats;
-    }
+                allChats = updatedChats;
+            }
 
-    // Reorder chats so that the latest chat appears at the top
-    const latestChat = allChats.find(chat => chat._id === message.chatId);
-    const otherChats = allChats.filter(chat => chat._id !== message.chatId);
-    allChats = [latestChat, ...otherChats];
+            // Reorder chats so that the latest chat appears at the top
+            const latestChat = allChats.find(chat => chat._id === message.chatId);
+            const otherChats = allChats.filter(chat => chat._id !== message.chatId);
+            allChats = [latestChat, ...otherChats];
 
-    // Dispatch updated chat list
-    dispatch(setAllChats(allChats));
-  });
-}, []);
+            // Dispatch updated chat list
+            dispatch(setAllChats(allChats));
+        });
+    }, []);
 
 
 
@@ -109,15 +109,30 @@ useEffect(() => {
     }
 
     function getLastMessageTime(userId) {
-        const chat = allChats.find(chat => chat.members.map(m => m._id).includes(userId))
+        // Find the chat where the user is a member
+        const chat = allChats.find(chat =>
+            chat.members.some(member => member._id === userId)
+        );
 
-        if (!chat && chat?.lastMessage) {
-            return null
+        // If no chat or no last message, return null
+        if (!chat || !chat.lastMessage) {
+            return null;
+        }
+
+        // Format the time or date
+        const msgTime = moment(chat?.lastMessage?.createdAt);
+        const today = moment();
+
+        if (msgTime.isSame(today, 'day')) {
+            return msgTime.format('hh:mm A'); // e.g., 02:45 PM
         } else {
-            return moment(chat?.lastMessage?.createdAt).format('hh:mm A');
-           
+            return msgTime.format('MMM DD');  // e.g., Sep 28
         }
     }
+
+
+
+
 
     function getUnreadMsg(userId) {
         const chat = allChats.find(chat => chat.members.map(m => m._id).includes(userId));
@@ -127,9 +142,6 @@ useEffect(() => {
             return null
         }
     }
-
-
-
 
     // function getData() {
     //     if (searchKey === " ") {
@@ -144,23 +156,24 @@ useEffect(() => {
     //         })
     //     }
     // }
-   
+
     return (
         allUsers
             .filter(userItem => {
                 const key = searchKey.toLowerCase();
                 return (
                     (userItem.firstname.toLowerCase().includes(key) ||
-                     userItem.lastname.toLowerCase().includes(key)) && key) ||
-                         ( allChats.some(chat => chat.members.map(m => m._id).includes(userItem._id)) )
-            }).map( obj => {
-                  let  userItem =obj;
-                  if (obj.members) {
-                    userItem =obj.members.find(mem=>mem._id !==CurrentUser._id)
-                  }
+                        userItem.lastname.toLowerCase().includes(key)) && key) ||
+                    (allChats.some(chat => chat.members.map(m => m._id).includes(userItem._id)))
+            }).map(obj => {
+                let userItem = obj;
+                if (obj.members) {
+                    userItem = obj.members.find(mem => mem._id !== CurrentUser._id)
+                }
                 return (
+
                     <div className="user-card" key={userItem._id} onClick={() => openChat(userItem._id)}>
-                        <div className={IsSelectedChat(userItem) ? "selected-user" : "user-info"}>
+                        <div className={`user-info ${IsSelectedChat(userItem) ? "selected-user" : ""}`}>
                             <div className="user-profile">
                                 {
                                     userItem.profilePic ? <img src={userItem.profilePic} alt="profilepic" /> :
@@ -170,24 +183,33 @@ useEffect(() => {
                                 }
                             </div>
                             <div className="user-details">
-                                <span className="name">{userItem.firstname} {userItem.lastname}</span>
-                                <span className="email">{getLastMessage(userItem._id) || userItem.email}</span>
-
-                                <span className="email">{getLastMessageTime(userItem._id)}</span>
-                                <span className="email"> {getUnreadMsg(userItem._id) ? "unread:" + getUnreadMsg(userItem._id) : " "}</span>
+                                <div className="left">
+                                    <div className="name">{userItem.firstname} {userItem.lastname}</div>
+                                    <div className="lastmsg">{getLastMessage(userItem._id) || userItem.email}</div>
+                                </div>
+                                <div className="right">
+                                    <div className="read">
+                                        {getUnreadMsg(userItem._id) ? getUnreadMsg(userItem._id) : ""}
+                                    </div>
+                                    <div className="lastmsgtime">{getLastMessageTime(userItem._id)}</div>
+                                </div>
                             </div>
 
+
+                            <div>
+                                {
+                                    !allChats.find(chat =>
+                                        chat.members.map(m => m._id).includes(userItem._id)
+                                    ) && (
+                                        <button onClick={() => StartNewChat(userItem._id)} className="start-chat-btn">
+                                            Start Chat
+                                        </button>
+                                    )
+                                }
+                            </div>
                         </div>
-                        {
-                            !allChats.find(chat =>
-                                chat.members.map(m => m._id).includes(userItem._id)
-                            ) && (
-                                <button onClick={() => StartNewChat(userItem._id)} className="start-chat-btn">
-                                    Start Chat
-                                </button>
-                            )
-                        }
                     </div>
+
                 )
             })
 
