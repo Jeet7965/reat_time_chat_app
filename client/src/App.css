@@ -1,0 +1,75 @@
+.profile-page-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 40px;
+  padding: 40px;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f5f6fa;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Profile Picture Area */
+.profile-pic-container {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* If a profile pic exists */
+.user-profile-pic-upload {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Default avatar (when no image) */
+.user-default-profile-avtar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #4a90e2;
+  color: white;
+  font-size: 48px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Profile info section */
+.profile-info-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.user-profile-name h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #333;
+}
+
+.profile-info-container b {
+  font-size: 16px;
+  color: #555;
+}
+
+/* File input */
+.select-profile-pic input[type="file"] {
+  margin-top: 15px;
+  padding: 5px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}

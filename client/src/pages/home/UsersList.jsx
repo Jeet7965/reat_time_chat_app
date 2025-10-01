@@ -6,7 +6,7 @@ import store from '../../redux/store.js';
 import { createNewChat } from "../../apiCalls/chat.js";
 import moment from 'moment';
 
-function UsersList({ searchKey, socket }) {
+function UsersList({ searchKey, socket, onlineUser }) {
 
     const { allUsers, allChats, user: CurrentUser, selectedChat } = useSelector(state => state.userReducer)
     const dispatch = useDispatch()
@@ -14,7 +14,7 @@ function UsersList({ searchKey, socket }) {
 
 
     useEffect(() => {
-        socket.on('receive-message', (message) => {
+        socket.off('set-message-count').on('set-message-count', (message) => {
             const selectedChat = store.getState().userReducer.selectedChat;
             let allChats = store.getState().userReducer.allChats;
 
@@ -44,7 +44,6 @@ function UsersList({ searchKey, socket }) {
             dispatch(setAllChats(allChats));
         });
     }, []);
-
 
 
 
@@ -102,7 +101,7 @@ function UsersList({ searchKey, socket }) {
             return null
         } else {
 
-            const msgPrefix = chat?.lastMessage?.sender === CurrentUser._id ? " you " : " "
+            const msgPrefix = chat?.lastMessage?.sender === CurrentUser._id ? "You: " : " "
             return msgPrefix + chat?.lastMessage?.text?.substring(0, 20);
 
         }
@@ -118,7 +117,6 @@ function UsersList({ searchKey, socket }) {
         if (!chat || !chat.lastMessage) {
             return null;
         }
-
         // Format the time or date
         const msgTime = moment(chat?.lastMessage?.createdAt);
         const today = moment();
@@ -129,9 +127,6 @@ function UsersList({ searchKey, socket }) {
             return msgTime.format('MMM DD');  // e.g., Sep 28
         }
     }
-
-
-
 
 
     function getUnreadMsg(userId) {
@@ -175,13 +170,22 @@ function UsersList({ searchKey, socket }) {
                     <div className="user-card" key={userItem._id} onClick={() => openChat(userItem._id)}>
                         <div className={`user-info ${IsSelectedChat(userItem) ? "selected-user" : ""}`}>
                             <div className="user-profile">
-                                {
-                                    userItem.profilePic ? <img src={userItem.profilePic} alt="profilepic" /> :
-                                        <div className="full-name">
-                                            {userItem.firstname.charAt(0).toUpperCase() + userItem.lastname.charAt(0).toUpperCase()}
-                                        </div>
-                                }
+                                {userItem.profilePic ? (
+                                    <img
+                                        src={userItem.profilePic}
+                                        alt="profilepic"
+                                        className={onlineUser.includes(userItem._id) ? " online-status"  : {}}
+                                    />
+                                ) : (
+                                    <div
+                                        className={onlineUser.includes(userItem._id) ? " online-status" :"full-name"}
+                                    >
+                                        {userItem.firstname.charAt(0).toUpperCase() +
+                                            userItem.lastname.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
                             </div>
+
                             <div className="user-details">
                                 <div className="left">
                                     <div className="name">{userItem.firstname} {userItem.lastname}</div>

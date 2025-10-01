@@ -7,18 +7,28 @@ import cors from 'cors';
 import jwt from 'jsonwebtoken'
 import verifyAuth from "./middleware/authmiddleware.js";
 import chatModel from "./models/chatModel.js";
-
-
+import multer from "multer";
+import cloudImage from "./cloudinary.js";
+import cookieParser from "cookie-parser";
 import msgModel from './models/messageModel.js'
 
 import serverHttp from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 
 // Load env variables
+dotenv.config({ path: "./config.env" });
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 const app = express();
+app.use(cors({
+    origin: 'http://localhost:5173', // frontend URL
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']               // if you want to send cookies/auth headers
+}));
 
 const server = serverHttp.createServer(app);
+
 const io = new SocketIOServer(server, {
     cors: {
         origin: "http://localhost:5173", // your frontend URL
@@ -26,36 +36,58 @@ const io = new SocketIOServer(server, {
         credentials: true, // if you need to send cookies or headers
     },
 });
-dotenv.config({ path: "./config.env" });
 
-app.use(cors({
-    origin: 'http://localhost:5173', // frontend URL
-    credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization']               // if you want to send cookies/auth headers
-}));
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 
 
 
+
+
+const onlineUser = []
 
 io.on('connection', (socket) => {
 
     socket.on('join-room', userid => {
         socket.join(userid);
-        console.log('userId:', userid);
-    });
-    socket.on('send-message', (message)=> {
        
-        io
-        .to(message.members[0])
-        .to(message.members[1])
-        .emit('receive-message',message)
-      
     });
-    socket.on('clear-unread-message',data=>{
+    socket.on('send-message', (message) => {
+
         io
-        .to(data.members[0])
-        .to(data.members[1])
-        .emit('message-count-cleared',data)
+            .to(message.members[0])
+            .to(message.members[1])
+            .emit('receive-message', message)
+
+        io
+            .to(message.members[0])
+            .to(message.members[1])
+            .emit('set-message-count', message)
+
+    });
+    socket.on('clear-unread-message', (data) => {
+        io
+            .to(data.members[0])
+            .to(data.members[1])
+            .emit('message-count-cleared', data)
+    })
+
+    socket.on('user-typing', (data) => {
+        io
+            .to(data.members[0])
+            .to(data.members[1])
+            .emit('started-typing', data)
+    })
+    socket.on('user-login', userId => {
+        if (!onlineUser.includes(userId)) {
+            onlineUser.push(userId);
+        }
+        io.emit('online-users', onlineUser);
+        // socket.emit('online-users', onlineUser);
+    });
+    socket.on('user-offline',userId =>{
+        onlineUser.splice(onlineUser.indexOf(userId),1);
+        io.emit('online-user-updated',onlineUser)
     })
 
 });
@@ -101,48 +133,43 @@ app.post("/api/singup", async (req, resp) => {
     }
 })
 
-
-
 // login
 
-app.post("/api/login", async (req, resp) => {
 
+app.post("/api/login", async (req, resp) => {
     try {
         const users = await userModel.findOne({ email: req.body.email }).select("+password");
         if (!users) {
-
             return resp.send({
-                message: "User does not exists",
+                message: "User does not exist",
                 success: false
-
-            })
+            });
         }
+
         const pass = await bycrypt.compare(req.body.password, users.password);
         if (!pass) {
             return resp.send({
-                message: "Ivailid password",
+                message: "Invalid password",
                 success: false
-
-            })
+            });
         }
-        const authToken = jwt.sign({ userId: users._id }, process.env.SECRET_KEY, { expiresIn: '2d' })
+
+        const authToken = jwt.sign({ userId: users._id }, process.env.SECRET_KEY, { expiresIn: '2d' });
+
         resp.send({
             message: "User Login successfully",
             success: true,
             token: authToken
-
-        })
+        });
     } catch (error) {
         resp.send({
             message: error.message,
             success: false
-
-        })
-
+        });
     }
+});
 
 
-})
 
 //user login
 
@@ -198,14 +225,49 @@ app.get("/user/alluser", verifyAuth, async (req, resp) => {
 
 })
 
+app.post('/upload-profile-pic', verifyAuth, upload.single('profilePic'), async (req, resp) => {
 
+    try {
+
+        const file = req.file;
+        if (!file) {
+            return resp.status(400).send({
+                message: "No image file uploaded",
+                success: false
+            });
+        }
+        const base64Image = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+
+        const UploadedimageUrl = await cloudImage.uploader.upload(base64Image, {
+            folder: 'Chat_App'
+        })
+        const user = await userModel.findByIdAndUpdate(
+            { _id: req.userId },
+            { profilePic: UploadedimageUrl.secure_url },
+            { new: true }
+        )
+        resp.send({
+            message: "Profile Pic updated Successfully",
+            success: true,
+            data: user
+
+        })
+
+    } catch (error) {
+
+        resp.send({
+            message: error.message,
+            success: false
+        })
+    }
+})
 
 app.post("/chat/create", verifyAuth, async (req, resp) => {
 
     try {
         const chat = new chatModel(req.body);
         const savechat = await chat.save();
-        console.log(savechat)
+        // console.log(savechat)
         resp.send({
             message: "chat Created Successfully",
             success: true,
@@ -228,7 +290,9 @@ app.get("/chat/get-all-chats", verifyAuth, async (req, resp) => {
     try {
         const AllChat = await chatModel.find({ members: { $in: req.userId } }).populate('members')
             .populate('lastMessage')
-            .sort({ updateAt: -1 });
+            .sort({ updatedAt: -1 });
+
+
 
         // console.log(AllChat)
         resp.send({
@@ -346,6 +410,9 @@ app.post("/clear-unread-messages", verifyAuth, async (req, resp) => {
     }
 
 })
+
+
+
 
 server.listen(process.env.PORT_NUMBER, () => {
     console.log(`This app is listening on port: ${process.env.PORT_NUMBER}!`);

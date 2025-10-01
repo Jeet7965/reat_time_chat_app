@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router';
 
 import toast from 'react-hot-toast';
 
+import { useState } from 'react';
 
 function Singup() {
 

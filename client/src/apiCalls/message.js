@@ -12,10 +12,10 @@ export const createNewMessage = async (message) => {
 
     let result = {};
     try {
-      result = await resp.json(); // ✅ attempt to parse
+      result = await resp.json(); 
     } catch (e) {
-      const text = await resp.text(); // fallback
-      result = { success: false, message: text || "Invalid JSON from server" };
+      // const text = await resp.text(); // fallback
+      result = { success: false|| "Invalid JSON from server" };
     }
 
     return result;

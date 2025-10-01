@@ -55,10 +55,6 @@ function ProtectRoute({ children }) {
 
   if (loading) return <p>Loading...</p>;
 
-
-
-
-
   async function getAllUsers() {
     try {
       const response = await fetch("http://localhost:3200/user/alluser", {
@@ -84,6 +80,8 @@ function ProtectRoute({ children }) {
     }
 
   }
+
+
   async function getAllChats() {
     try {
       const response = await fetch("http://localhost:3200/chat/get-all-chats", {
@@ -109,6 +107,7 @@ function ProtectRoute({ children }) {
     }
 
   }
+
 
   return (
     <Fragment>

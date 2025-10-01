@@ -8,12 +8,14 @@ import moment from 'moment';
 import toast from 'react-hot-toast';
 import { setAllChats } from '../../redux/userSlice.js';
 
-
+import EmojiPicker from 'emoji-picker-react'
 
 function Chat({ socket }) {
   const { selectedChat, user, allChats } = useSelector(state => state.userReducer);
   const [message, setMessage] = useState("");
   const [Allmessage, setAllMessage] = useState([]);
+  const [istyping, setTyping] = useState(false)
+  const [showEmoji, setShowEmolji] = useState(false)
 
 
   const dispatch = useDispatch()
@@ -23,43 +25,54 @@ function Chat({ socket }) {
     if (selectedChat && selectedChat._id) {
       getMessage();
       ClearUnreadMsg();
-
-      socket.off('receive-message').on('receive-message', data => {
-        const selectedChat = store.getState().userReducer.selectedChat;
-        if (selectedChat._id === data.chatId) {
-
-          setAllMessage(prevmsg => [...prevmsg, data])
-        }
-        if (selectedChat._id === message.chatId && message.sender !== user._id) {
-          ClearUnreadMsg();
-        }
-      })
-      socket.on('message-count-cleared', data => {
-        const selectedChat = store.getState().userReducer.selectedChat;
-        const allChats = store.getState().userReducer.allChats;
-
-
-        if (selectedChat._id === data.chatId) {
-          // Updating unread msg count in chat obj
-
-          const updatedChat = allChats.map(chat => {
-            if (chat._id === data.chatId) {
-
-              return { ...chat, unreadmessage: 0 }
-            }
-            return chat
-          })
-          dispatch(setAllChats(updatedChat));
-          // Updating read msg proprty in msg onj
-          setAllMessage(prevmsg => {
-            return prevmsg.map(msg => {
-              return { ...msg, read: true }
-            })
-          })
-        }
-
-      })
     }
+    socket.off('receive-message').on('receive-message', data => {
+      const selectedChat = store.getState().userReducer.selectedChat;
+      if (selectedChat._id === data.chatId) {
+
+        setAllMessage(prevmsg => [...prevmsg, data])
+      }
+      if (selectedChat._id === message.chatId && message.sender !== user._id) {
+        ClearUnreadMsg();
+      }
+    })
+
+    socket.on('message-count-cleared', data => {
+      const selectedChat = store.getState().userReducer.selectedChat;
+      const allChats = store.getState().userReducer.allChats;
+
+
+      if (selectedChat._id === data.chatId) {
+        // Updating unread msg count in chat obj
+
+        const updatedChat = allChats.map(chat => {
+          if (chat._id === data.chatId) {
+
+            return { ...chat, unreadmessage: 0 }
+          }
+          return chat
+        })
+        dispatch(setAllChats(updatedChat));
+        // Updating read msg proprty in msg onj
+        setAllMessage(prevmsg => {
+          return prevmsg.map(msg => {
+            return { ...msg, read: true }
+          })
+        })
+      }
+
+    })
+
+    socket.on('started-typing', (data) => {
+
+      if (selectedChat?._id === data.chatId && data.sender !== user._id) {
+        setTyping(true);
+        setTimeout(() => {
+          setTyping(false);
+        }, 2000)
+      }
+    });
+
 
   }, [selectedChat]);
 
@@ -68,7 +81,7 @@ function Chat({ socket }) {
     if (msgContainerRef.current) {
       msgContainerRef.current.scrollTop = msgContainerRef.current.scrollHeight;
     }
-  }, [Allmessage]);
+  }, [Allmessage, istyping]);
 
 
   // If no selected chat, show a prompt
@@ -170,17 +183,18 @@ function Chat({ socket }) {
 
 
 
-  async function sendMessage() {
+  async function sendMessage(image) {
     const trimmedMessage = message.trim();
-    if (!trimmedMessage) {
-      toast.error("Message cannot be empty.");
-      return;
-    }
+    // if (!trimmedMessage) {
+    //   toast.error("Message cannot be empty.");
+    //   return;
+    // }
     try {
       const newMessage = {
         chatId: selectedChat._id,
         sender: user._id,
         text: trimmedMessage,
+        image:image
       };
       const createdAt = moment().toISOString();
       socket.emit('send-message', {
@@ -194,6 +208,7 @@ function Chat({ socket }) {
 
       if (response.success) {
         setMessage(""); // Clear the input field
+        setShowEmolji('')
 
         // Reorder chats so that the latest chat appears at the top
         let updatedChats = [...allChats];
@@ -254,7 +269,16 @@ function Chat({ socket }) {
     // For messages sent on other days, show the full date
     return time.format("MM DD , hh:mm A");
   };
+ async function sendImage(e) {
+  const file = e.target.files[0]
+  const reader =new FileReader(file)
+  reader.readAsDataURL(file);
 
+  reader.onloadend = async ()=>{
+    sendMessage(reader.result);
+  }
+
+ }
 
   return (
     <div className="chat-container">
@@ -288,7 +312,8 @@ function Chat({ socket }) {
               return (
                 <div key={msg._id || uuidv4()}>
                   <div className={`message ${isCurrentSender ? 'outgoing' : 'incoming'}`}>
-                    {msg.text}
+                    <div>{msg.text}</div>
+                    <div>{msg.image && <img src={msg.image} alt='image' height="120px" width="120px"></img>}</div>
                   </div>
                   <div className="timestamp">{formatTime(msg.createdAt)}
                     <div>
@@ -301,23 +326,62 @@ function Chat({ socket }) {
               );
             })
           )}
-        </div>
 
+          <div>{istyping && <i>typing....</i>}</div>
+        </div>
+        {
+          showEmoji &&
+          <div>
+            <EmojiPicker onEmojiClick={(e) => setMessage(message + e.emoji)}></EmojiPicker>
+          </div>
+        }
         <div className="chat-input">
           <input
             type="text"
             id="message-input"
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => {
+              setMessage(e.target.value)
+              socket.emit('user-typing', {
+
+                chatId: selectedChat._id,
+                members: selectedChat.members.map(m => m._id), // User IDs
+                sender: user._id
+              })
+            }
+            }
             onKeyDown={(e) => {
               if (e.key === "Enter") sendMessage();
             }}
             placeholder="Type a message..."
             className="focus:ring-2 focus:ring-teal-500 transition-all duration-200"
           />
-          <button onClick={sendMessage} id="send-button">
-            Send
+
+          <button
+            className='fa fa-send-o'
+            onClick={()=> sendMessage('')} id="send-button">
+
           </button>
+          <button
+
+            className="fa fa-smile-o"
+            aria-hidden="true"
+
+            onClick={() => setShowEmolji(!showEmoji)} id="send-button">
+
+          </button   >
+          <label htmlFor="file">
+            <i className='fa fa-picture-o button' ></i>
+            <input type="file" id='file'
+              style={{ display: "none" }}
+              accept='image/jpg,image/png,image/jpeg,image/gif'
+
+              onChange={sendImage}
+
+            />
+          </label>
+
+
         </div>
       </div>
     </div>

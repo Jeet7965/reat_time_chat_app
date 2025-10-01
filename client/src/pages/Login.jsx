@@ -46,7 +46,8 @@ function Login() {
     }
     return (
         <>
-            <div className="container">
+           <div className="main-container">
+             <div className="container">
                 <div className='card'>
                     <div className='card-title'>
                         <h1>Login </h1>
@@ -65,6 +66,7 @@ function Login() {
                 </div>
             </div>
 
+           </div>
 
         </>
     )

@@ -27,22 +27,29 @@
 .header .profile {
   display: flex;
   align-items: center;
-  gap: 10px;
-  /* space between name and initials */
+  gap: 15px;
   padding: 10px;
+   
 }
-
+.header .logout-btn{
+  background-color: transparent;
+  color: rgba(239, 76, 12, 0.907);
+  border: none;
+  font-size: 25px;
+  padding: auto 10px;
+  cursor: pointer;
+}
 .profile .full-name .username {
   font-weight: 600;
   font-size: 1rem;
   color: #333;
+
 }
 
 .profile .initials {
   width: 40px;
   height: 40px;
   background-color: #25D366;
-  /* WhatsApp-like green */
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -50,7 +57,9 @@
   color: white;
   font-weight: bold;
   font-size: 1rem;
+ 
 }
+
 
 /* Responsive: smaller screens */
 @media (max-width: 600px) {
@@ -191,7 +200,7 @@
   display: flex;
 
   flex-direction: column;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #90bfc7;
   cursor: pointer;
   padding: 10px;
   transition: background-color 0.2s ease;
@@ -207,12 +216,14 @@
   border-radius: 8px;
   padding: 8px;
 
+
 }
 /* User Info Container */
 .user-info {
   display: flex;
   align-items: center;
   gap: 12px;
+
 }
 
 /* Profile */
@@ -229,6 +240,20 @@
   font-size: 16px;
   color: white;
   flex-shrink: 0;
+}
+
+.online-status{
+  border: 3px solid green;
+  border-radius: 50%;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+  height: 45px;
+  width: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center
 }
 
 .user-profile img {
