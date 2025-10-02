@@ -31,7 +31,7 @@ function Header({socket}) {
             <header className="header">
                 <div className="logo">
 
-                    <span>MyApp</span>
+                    <span>Chat_App</span>
                 </div>
                 <div className="profile">
                     <div className="full-name">

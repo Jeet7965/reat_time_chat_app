@@ -50,7 +50,7 @@ io.on('connection', (socket) => {
 
     socket.on('join-room', userid => {
         socket.join(userid);
-       
+
     });
     socket.on('send-message', (message) => {
 
@@ -82,12 +82,12 @@ io.on('connection', (socket) => {
         if (!onlineUser.includes(userId)) {
             onlineUser.push(userId);
         }
-        io.emit('online-users', onlineUser);
-        // socket.emit('online-users', onlineUser);
+        // io.emit('online-users', onlineUser);
+        socket.emit('online-users', onlineUser);
     });
-    socket.on('user-offline',userId =>{
-        onlineUser.splice(onlineUser.indexOf(userId),1);
-        io.emit('online-user-updated',onlineUser)
+    socket.on('user-offline', userId => {
+        onlineUser.splice(onlineUser.indexOf(userId), 1);
+        io.emit('online-user-updated', onlineUser)
     })
 
 });

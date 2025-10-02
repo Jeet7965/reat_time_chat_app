@@ -18,9 +18,9 @@ function UsersList({ searchKey, socket, onlineUser }) {
             const selectedChat = store.getState().userReducer.selectedChat;
             let allChats = store.getState().userReducer.allChats;
 
-            // Check if the message is in a chat that's not selected
+
             if (selectedChat?._id !== message.chatId) {
-                // Update unread message count and last message
+
                 const updatedChats = allChats.map(chat => {
                     if (chat._id === message.chatId) {
                         return {
@@ -174,11 +174,11 @@ function UsersList({ searchKey, socket, onlineUser }) {
                                     <img
                                         src={userItem.profilePic}
                                         alt="profilepic"
-                                        className={onlineUser.includes(userItem._id) ? " online-status"  : {}}
+                                        className={onlineUser.includes(userItem._id) ? " online-status" : {}}
                                     />
                                 ) : (
                                     <div
-                                        className={onlineUser.includes(userItem._id) ? " online-status" :"full-name"}
+                                        className={onlineUser.includes(userItem._id) ? " online-status" : "full-name"}
                                     >
                                         {userItem.firstname.charAt(0).toUpperCase() +
                                             userItem.lastname.charAt(0).toUpperCase()}

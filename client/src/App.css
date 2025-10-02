@@ -1,6 +1,7 @@
+/* Main container */
 .profile-page-container {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   gap: 40px;
   padding: 40px;
@@ -8,6 +9,21 @@
   background: #f5f6fa;
   min-height: 100vh;
   box-sizing: border-box;
+  
+}
+
+/* Profile Card */
+.profile-card {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 40px;
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
+  width: 100%;
 }
 
 /* Profile Picture Area */
@@ -21,6 +37,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 /* If a profile pic exists */
@@ -64,12 +81,92 @@
   color: #555;
 }
 
-/* File input */
+/* File input and button */
+.select-profile-pic {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .select-profile-pic input[type="file"] {
-  margin-top: 15px;
+  margin-top: 5px;
   padding: 5px;
   border: 1px solid #bbb;
   border-radius: 6px;
   background: #fff;
   cursor: pointer;
+}
+
+.select-profile-pic button {
+  padding: 10px 15px;
+  color: white;
+  border: none;
+  background-color: #357ab8;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s ease;
+}
+
+
+.select-profile-pic button:hover {
+  background: #083a65;
+}
+
+/* Second button → Green */
+.select-profile-pic button:last-child {
+  background: #28a745;
+}
+.select-profile-pic button:last-child:hover {
+  background: #218838;
+}
+/* Responsive styles */
+@media (max-width: 900px) {
+  .profile-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .profile-pic-container {
+    width: 120px;
+    height: 120px;
+  }
+
+  .user-default-profile-avtar {
+    font-size: 36px;
+  }
+
+  .user-profile-name h1 {
+    font-size: 24px;
+  }
+}
+
+
+
+@media (max-width: 600px) {
+  .profile-page-container {
+    padding: 20px;
+  }
+
+  .profile-card {
+    width: 100%;
+    padding: 15px;
+    gap: 15px;
+  }
+
+  .user-profile-name h1 {
+    font-size: 20px;
+  }
+
+  .profile-info-container b {
+    font-size: 14px;
+  }
+
+  .select-profile-pic button {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
 }

@@ -3,13 +3,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment';
 import toast from 'react-hot-toast';
 import { setUser } from '../redux/userSlice';
+import { useNavigate } from "react-router";
 import '../app.css';
 function Profile() {
     const { user } = useSelector((state) => state.userReducer);
     const [previewImage, setPreviewImage] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const dispatch = useDispatch();
-
+ const navigate = useNavigate();
     useEffect(() => {
         if (user?.profilePic) {
             setPreviewImage(user.profilePic);
@@ -56,11 +57,11 @@ function Profile() {
             const result = await response.json();
 
             if (result.success) {
-                
+
                 toast.success(result.message);
                 dispatch(setUser(result.data));
 
-               
+
             } else {
                 toast.error(result.message || "Image upload failed");
             }
@@ -71,31 +72,33 @@ function Profile() {
 
     return (
         <div className="profile-page-container">
-            <div className="profile-pic-container">
-                {previewImage ? (
-                    <img src={previewImage} className="user-profile-pic-upload" alt="Profile" />
-                ) : (
-                    <div className="user-default-profile-avtar">{getInitials()}</div>
-                )}
-            </div>
-
-            <div className="profile-info-container">
-                <div className="user-profile-name">
-                    <h1>{getFullname()}</h1>
-                </div>
-                <div>
-                    <b>Email:</b> {user?.email}
-                </div>
-                <div>
-                    <b>Created:</b> {moment(user?.createdAt).format('MMM DD, YYYY')}
+            <div className="profile-card">
+                <div className="profile-pic-container">
+                    {previewImage ? (
+                        <img src={previewImage} className="user-profile-pic-upload" alt="Profile" />
+                    ) : (
+                        <div className="user-default-profile-avtar">{getInitials()}</div>
+                    )}
                 </div>
 
-                <div className="select-profile-pic">
-                    <input type="file" accept="image/*" onChange={onFileSelect} />
-                    <button onClick={uploadProfilePic}>Upload</button>
+                <div className="profile-info-container">
+                    <div className="user-profile-name">
+                        <h1>{getFullname()}</h1>
+                    </div>
+                    <div><b>Email:</b> {user?.email}</div>
+                    <div><b>Account Created:</b> {moment(user?.createdAt).format('MMM DD, YYYY')}</div>
+
+                    <div className="select-profile-pic">
+                        <input type="file" accept="image/*" onChange={onFileSelect} />
+                       
+                        <button onClick={uploadProfilePic}>Upload</button>
+                        <button onClick={()=>navigate('/')}>Back Home</button>
+                       
+                    </div>
                 </div>
             </div>
         </div>
+
     );
 }
 

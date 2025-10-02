@@ -6,7 +6,7 @@ import store from '../../redux/store.js'
 import { ClearUnreadmassage } from '../../apiCalls/chat.js';
 import moment from 'moment';
 import toast from 'react-hot-toast';
-import { setAllChats } from '../../redux/userSlice.js';
+import { setAllChats,clearSelectedChat } from '../../redux/userSlice.js';
 
 import EmojiPicker from 'emoji-picker-react'
 
@@ -21,6 +21,19 @@ function Chat({ socket }) {
   const dispatch = useDispatch()
   const msgContainerRef = useRef(null);
   // Fetch messages when selectedChat changes
+
+  const isMobile = window.innerWidth <= 768
+
+  useEffect(() => {
+    const handleBack = () => {
+      dispatch(clearSelectedChat());
+    };
+
+    window.addEventListener('back-to-sidebar', handleBack);
+    return () => window.removeEventListener('back-to-sidebar', handleBack);
+  }, []);
+
+
   useEffect(() => {
     if (selectedChat && selectedChat._id) {
       getMessage();
@@ -28,11 +41,11 @@ function Chat({ socket }) {
     }
     socket.off('receive-message').on('receive-message', data => {
       const selectedChat = store.getState().userReducer.selectedChat;
-      if (selectedChat._id === data.chatId) {
+      if (selectedChat?._id === data.chatId) {
 
         setAllMessage(prevmsg => [...prevmsg, data])
       }
-      if (selectedChat._id === message.chatId && message.sender !== user._id) {
+      if (selectedChat?._id === message.chatId && message.sender !== user._id) {
         ClearUnreadMsg();
       }
     })
@@ -42,7 +55,7 @@ function Chat({ socket }) {
       const allChats = store.getState().userReducer.allChats;
 
 
-      if (selectedChat._id === data.chatId) {
+      if (selectedChat?._id === data.chatId) {
         // Updating unread msg count in chat obj
 
         const updatedChat = allChats.map(chat => {
@@ -194,7 +207,7 @@ function Chat({ socket }) {
         chatId: selectedChat._id,
         sender: user._id,
         text: trimmedMessage,
-        image:image
+        image: image
       };
       const createdAt = moment().toISOString();
       socket.emit('send-message', {
@@ -269,16 +282,16 @@ function Chat({ socket }) {
     // For messages sent on other days, show the full date
     return time.format("MM DD , hh:mm A");
   };
- async function sendImage(e) {
-  const file = e.target.files[0]
-  const reader =new FileReader(file)
-  reader.readAsDataURL(file);
+  async function sendImage(e) {
+    const file = e.target.files[0]
+    const reader = new FileReader(file)
+    reader.readAsDataURL(file);
 
-  reader.onloadend = async ()=>{
-    sendMessage(reader.result);
+    reader.onloadend = async () => {
+      sendMessage(reader.result);
+    }
+
   }
-
- }
 
   return (
     <div className="chat-container">
@@ -286,7 +299,7 @@ function Chat({ socket }) {
       <div className="app-chat-area">
         <div className="chat-area-header">
 
-          <div>
+          <div className='chat-header-title'>
             {
               selectedUser.profilePic ? (
                 <img src={selectedUser.profilePic} className="chat-profile" alt="profilepic" />
@@ -296,10 +309,15 @@ function Chat({ socket }) {
                 </div>
               )
             }
+            <h3 className="chat-title">
+              {selectedUser?.firstname + " " + selectedUser?.lastname}
+            </h3>
           </div>
-          <h3 className="chat-title">
-            {selectedUser?.firstname + " " + selectedUser?.lastname}
-          </h3>
+          <div className='chat-header-back-button'>
+            {isMobile && (
+              <button onClick={() => dispatch(clearSelectedChat())} className="back-button">← Back</button>
+            )}
+          </div>
         </div>
         <div className="chat-messages" ref={msgContainerRef} id="main-chat-area">
           {Allmessage.length === 0 ? (
@@ -327,7 +345,7 @@ function Chat({ socket }) {
             })
           )}
 
-          <div>{istyping && <i>typing....</i>}</div>
+          <div>{istyping && selectedChat.members.map(m=>m._id).includes(data?.sender) && <i>typing....</i>}</div>
         </div>
         {
           showEmoji &&
@@ -359,7 +377,7 @@ function Chat({ socket }) {
 
           <button
             className='fa fa-send-o'
-            onClick={()=> sendMessage('')} id="send-button">
+            onClick={() => sendMessage('')} id="send-button">
 
           </button>
           <button

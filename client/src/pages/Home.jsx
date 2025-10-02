@@ -13,7 +13,6 @@ function Home() {
     const [onlineUser, setOnlineUsers] = useState([])
     useEffect(() => {
 
-
         if (user && user._id) {
             socket.emit('join-room', user._id);
             socket.emit('user-login', user._id)
@@ -29,13 +28,16 @@ function Home() {
     return (
         <>
             <Header socket={socket}></Header>
-            <div className="home-page">
-                <div className='sidebar'>
-                    <Sidebar socket={socket} onlineUser={onlineUser} ></Sidebar>
+          <div className="home-page">
+                <div className={`sidebar ${selectedChat? 'hide-on-mobile' : 'show'}`}>
+                    <Sidebar socket={socket} onlineUser={onlineUser} />
                 </div>
-                <hr />
-                <div className='main-chat'>
-                    <Chat socket={socket}></Chat>
+
+                <div className={`main-chat ${selectedChat ? 'show' : 'hide-on-mobile'}`}>
+                    <Chat
+                        socket={socket}
+                        onBack={() => window.dispatchEvent(new Event('back-to-sidebar'))}
+                    />
                 </div>
             </div>
         </>
