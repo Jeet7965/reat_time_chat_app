@@ -18,7 +18,7 @@ function Login() {
         event.preventDefault();
         try {
 
-            const response = await fetch("http://localhost:3200/api/login", {
+            const response = await fetch("https://real-chat-app-58ba.onrender.com/api/login", {
                 method: 'Post',
                 body: JSON.stringify(user),
                 headers: { "Content-Type": "application/json" },

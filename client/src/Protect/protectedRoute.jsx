@@ -17,7 +17,7 @@ function ProtectRoute({ children }) {
   const getLoggedUser = async () => {
     try {
 
-      const response = await fetch("http://localhost:3200/user/logedin", {
+      const response = await fetch("https://real-chat-app-58ba.onrender.com/user/logedin", {
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("token")}`
         }
@@ -57,7 +57,7 @@ function ProtectRoute({ children }) {
 
   async function getAllUsers() {
     try {
-      const response = await fetch("http://localhost:3200/user/alluser", {
+      const response = await fetch("https://real-chat-app-58ba.onrender.com/user/alluser", {
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("token")}`
         }
@@ -84,7 +84,7 @@ function ProtectRoute({ children }) {
 
   async function getAllChats() {
     try {
-      const response = await fetch("http://localhost:3200/chat/get-all-chats", {
+      const response = await fetch("https://real-chat-app-58ba.onrender.com/chat/get-all-chats", {
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("token")}`
         }

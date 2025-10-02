@@ -1,7 +1,7 @@
 
 export const createNewChat = async (members) => {
   try {
-    const resp = await fetch("http://localhost:3200/chat/create", {
+    const resp = await fetch("https://real-chat-app-58ba.onrender.com/chat/create", {
       method: "POST",
       body: JSON.stringify({ members }), // send members in body
       headers: {
@@ -20,7 +20,7 @@ export const createNewChat = async (members) => {
 
 export const ClearUnreadmassage = async (chatId) => {
   try {
-    const resp = await fetch("http://localhost:3200/clear-unread-messages", {
+    const resp = await fetch("https://real-chat-app-58ba.onrender.com/clear-unread-messages", {
       method: "POST",
       body: JSON.stringify({chatId:chatId}), // send members in body
       headers: {

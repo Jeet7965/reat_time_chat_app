@@ -44,7 +44,7 @@ function Profile() {
         try {
             const formData = new FormData();
             formData.append("profilePic", selectedFile);
-            const response = await fetch("http://localhost:3200/upload-profile-pic", {
+            const response = await fetch("https://real-chat-app-58ba.onrender.com/upload-profile-pic", {
                 method: "POST",
                 body: formData,
                 headers: {

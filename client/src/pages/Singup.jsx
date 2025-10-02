@@ -18,7 +18,7 @@ const navigate=useNavigate();
     event.preventDefault();
     try {
 
-      const resp = await fetch("http://localhost:3200/api/singup", {
+      const resp = await fetch("https://real-chat-app-58ba.onrender.com/api/singup", {
         method: 'Post',
         body: JSON.stringify(user),
         headers: { "Content-Type": "application/json" },

@@ -1,6 +1,6 @@
 export const createNewMessage = async (message) => {
   try {
-    const resp = await fetch("http://localhost:3200/message/new-message", {
+    const resp = await fetch("https://real-chat-app-58ba.onrender.com/message/new-message", {
       method: "POST",
       body: JSON.stringify({ ...message }),
       headers: {
@@ -26,7 +26,7 @@ export const createNewMessage = async (message) => {
 
 export const getAllMessage = async (chatId) => {
   try {
-    const resp = await fetch(`http://localhost:3200/message/get-all-message/${chatId}`, {
+    const resp = await fetch(`https://real-chat-app-58ba.onrender.com/message/get-all-message/${chatId}`, {
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("token")}`
       },
