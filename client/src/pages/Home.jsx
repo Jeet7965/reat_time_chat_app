@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Header from './homePage/Header'
 import '../assets/css/home.css'
-import SideBar from './homePage/BarSide'
+import SideBar from './BarSide'
 import Chat from './homePage/Chat'
 import { useSelector } from 'react-redux'
 import { io } from 'socket.io-client'

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import '../home/'
-import SearchBar from './Searchbar'
-import UsersList from './UsersList'
+import SearchBar from './homePage/Searchbar'
+import UsersList from './homePage/UsersList'
 function SideBar({ socket,onlineUser }) {
     const [searchKey, setSearchKey] = useState("")
 
