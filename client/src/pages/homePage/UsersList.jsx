@@ -101,7 +101,7 @@ function UsersList({ searchKey, socket, onlineUser }) {
             return null
         } else {
 
-            const msgPrefix = chat?.lastMessage?.sender === CurrentUser._id ? "You: " : " "
+            const msgPrefix = chat?.lastMessage?.sender === CurrentUser?._id ? "You: " : " "
             return msgPrefix + chat?.lastMessage?.text?.substring(0, 20);
 
         }

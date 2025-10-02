@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import Header from './home/Header'
+import Header from './homePage/Header'
 import '../assets/css/home.css'
-import Sidebar from './home/sidebar'
-import Chat from './home/Chat'
+import Sidebar from './homePage/sidebar'
+import Chat from './homePage/Chat'
 import { useSelector } from 'react-redux'
 import { io } from 'socket.io-client'
 
-const socket = io('https://real-chat-app-58ba.onrender.com');
+const socket = io('https://real-chat-app-58ba.onrender.com', {
+    transports: ["websocket", "polling"]
+});
+
+socket.on("connect", () => {
+    console.log("Connected:", socket.id);
+});
 function Home() {
     const { selectedChat, user } = useSelector(state => state.userReducer)
 
@@ -23,13 +29,13 @@ function Home() {
                 setOnlineUsers(onlineusers)
             })
         }
-    }, [user,onlineUser]);
+    }, [user, onlineUser]);
 
     return (
         <>
             <Header socket={socket}></Header>
-          <div className="home-page">
-                <div className={`sidebar ${selectedChat? 'hide-on-mobile' : 'show'}`}>
+            <div className="home-page">
+                <div className={`sidebar ${selectedChat ? 'hide-on-mobile' : 'show'}`}>
                     <Sidebar socket={socket} onlineUser={onlineUser} />
                 </div>
 
