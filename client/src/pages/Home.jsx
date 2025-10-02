@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Header from './homePage/Header'
 import '../assets/css/home.css'
-import Sidebar from './homePage/Asidebar'
+import SideBar from './homePage/BarSide'
 import Chat from './homePage/Chat'
 import { useSelector } from 'react-redux'
 import { io } from 'socket.io-client'
@@ -36,7 +36,7 @@ function Home() {
             <Header socket={socket}></Header>
             <div className="home-page">
                 <div className={`sidebar ${selectedChat ? 'hide-on-mobile' : 'show'}`}>
-                    <Sidebar socket={socket} onlineUser={onlineUser} />
+                    <SideBar socket={socket} onlineUser={onlineUser} />
                 </div>
 
                 <div className={`main-chat ${selectedChat ? 'show' : 'hide-on-mobile'}`}>

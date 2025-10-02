@@ -4,7 +4,7 @@ import moment from 'moment';
 import toast from 'react-hot-toast';
 import { setUser } from '../redux/userSlice';
 import { useNavigate } from "react-router";
-import '../app.css';
+import '../App.css';
 function Profile() {
     const { user } = useSelector((state) => state.userReducer);
     const [previewImage, setPreviewImage] = useState('');

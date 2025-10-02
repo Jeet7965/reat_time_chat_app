@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import '../home/'
 import SearchBar from './Searchbar'
 import UsersList from './UsersList'
-function Sidebar({ socket,onlineUser }) {
+function SideBar({ socket,onlineUser }) {
     const [searchKey, setSearchKey] = useState("")
 
     return (
@@ -22,4 +22,4 @@ function Sidebar({ socket,onlineUser }) {
     )
 }
 
-export default Sidebar
+export default SideBar
