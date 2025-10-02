@@ -80,6 +80,7 @@ function Chat({ socket }) {
 
       if (selectedChat?._id === data.chatId && data.sender !== user._id) {
         setTyping(true);
+        setTyping(data.sender);
         setTimeout(() => {
           setTyping(false);
         }, 2000)
@@ -274,7 +275,7 @@ function Chat({ socket }) {
             })
           )}
 
-          <div>{istyping && selectedChat.members.map(m=>m._id).includes(data?.sender) && <i>typing....</i>}</div>
+          <div>{istyping && selectedChat.members.map(m=>m._id).includes(istyping) && <i>typing....</i>}</div>
         </div>
         {
           showEmoji &&

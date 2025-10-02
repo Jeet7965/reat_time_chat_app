@@ -1,18 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import Header from './homePage/Header'
 import '../assets/css/home.css'
-import SideBar from './BarSide'
+import SideBar from './homePage/BarSide'
 import Chat from './homePage/Chat'
 import { useSelector } from 'react-redux'
 import { io } from 'socket.io-client'
 
-const socket = io('https://real-chat-app-58ba.onrender.com', {
-    transports: ["websocket", "polling"]
-});
+const socket = io('https://real-chat-app-58ba.onrender.com');
 
-socket.on("connect", () => {
-    console.log("Connected:", socket.id);
-});
+
 function Home() {
     const { selectedChat, user } = useSelector(state => state.userReducer)
 

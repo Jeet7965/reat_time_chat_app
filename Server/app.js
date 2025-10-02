@@ -22,7 +22,7 @@ const upload = multer({ storage });
 
 const app = express();
 app.use(cors({
-    origin: ['http://localhost:5173',"https://your-frontend.netlify.app"], // frontend URL
+    origin: ['http://localhost:5173'], // frontend URL
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization']               // if you want to send cookies/auth headers
 }));
@@ -31,7 +31,7 @@ const server = serverHttp.createServer(app);
 
 const io = new SocketIOServer(server, {
     cors: {
-        origin: ["http://localhost:5173","https://your-frontend.netlify.app"], // your frontend URL
+        origin: ["http://localhost:5173"], // your frontend URL
         methods: ["GET", "POST"],
         credentials: true, // if you need to send cookies or headers
     },
