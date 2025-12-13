@@ -22,7 +22,7 @@ const upload = multer({ storage });
 
 const app = express();
 app.use(cors({
-    origin: ["https://chatscapp.netlify.app",'http://localhost:5173'], // frontend URL
+    origin: ["https://hiibuddy.netlify.app",'http://localhost:5173'], // frontend URL
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization']               
 }));
@@ -31,7 +31,7 @@ const server = serverHttp.createServer(app);
 
 const io = new SocketIOServer(server, {
     cors: {
-        origin: ["https://chatscapp.netlify.app","http://localhost:5173"], // your frontend URL
+        origin: ["https://hiibuddy.netlify.app","http://localhost:5173"], // your frontend URL
         methods: ["GET", "POST"],
         credentials: true, 
     },
