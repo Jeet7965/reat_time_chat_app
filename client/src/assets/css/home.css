@@ -602,3 +602,15 @@
 .chat-input .fa-picture-o:hover {
   background: #d1d5db;
 }
+
+@media (max-width: 480px) {
+  .chat-input input {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .chat-input button {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+}

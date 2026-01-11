@@ -283,7 +283,7 @@ function Chat({ socket }) {
             <EmojiPicker onEmojiClick={(e) => setMessage(message + e.emoji)}></EmojiPicker>
           </div>
         }
-        <div className="chat-input">
+        <div className="chat-input ">
           <input
             type="text"
             id="message-input"

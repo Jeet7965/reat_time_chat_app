@@ -61,7 +61,7 @@ function Login() {
                         </form>
                     </div>
                     <div className="card-items">
-                        <span> Don't have an account <Link to='/singup'>sinup here</Link></span>
+                        <span> Don't have an account <Link to='/singup'>signup here</Link></span>
                     </div>
                 </div>
             </div>
