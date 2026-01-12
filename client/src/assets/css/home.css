@@ -379,7 +379,7 @@
   box-sizing: border-box;
 }
 
-/* .app-chat-area {
+.app-chat-area {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -387,17 +387,7 @@
   background-color: #fff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-} */
-
-.app-chat-area {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  background-color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
 }
-
 
 .chat-area-header {
   background-color: #2e6a88a8;
@@ -455,7 +445,6 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  padding-bottom: 70px; 
   gap: 0.5rem;
   background-color: #ecdfd1;
   background-size: cover;
@@ -612,21 +601,4 @@
 .chat-input .fa-smile-o:hover,
 .chat-input .fa-picture-o:hover {
   background: #d1d5db;
-}
-
-@media (max-width: 768px) {
-  .chat-input {
-    position: sticky;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    z-index: 100;
-    background: #f8f9fa;
-    padding: 8px;
-    padding-bottom: env(safe-area-inset-bottom); /* iPhone fix */
-  }
-
-  .chat-input input[type="text"] {
-    font-size: 15px;
-  }
 }

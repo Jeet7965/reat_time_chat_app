@@ -35,7 +35,7 @@ export const getAllMessage = async (chatId) => {
 
     let result = {};
     try {
-      result = await resp.json(); // ✅ attempt to parse
+      result = await resp.json(); // attempt to parse
     } catch (e) {
       const text = await resp.text(); // fallback
       result = { success: false, message: text || "Invalid JSON from server" };

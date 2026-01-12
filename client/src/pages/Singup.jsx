@@ -49,18 +49,7 @@ const navigate=useNavigate();
       toast.error(error.response?.data?.error || error.message);
     }
 
-    // try {
-
-    //   const response = await singupUser(user);
-    //  if (response.success) {
-    //     alert(response.message);
-    //   } else {
-    //     alert(response.error || "Signup failed");
-    //   }
-    // } catch (error) {
-    //   console.error(error);
-    //   alert(error.response?.data?.error || error.message);
-    // }
+ 
 
   }
 
