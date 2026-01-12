@@ -383,7 +383,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 85vh;
+  height: 88vh;
   background-color: #fff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -601,4 +601,21 @@
 .chat-input .fa-smile-o:hover,
 .chat-input .fa-picture-o:hover {
   background: #d1d5db;
+}
+@media (max-width: 768px) {
+  .chat-input {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+  }
+
+  .chat-messages {
+    margin-bottom: 60px; /* equal to input height */
+  }
+
+  .app-chat-area {
+    height: 100vh; /* make sure it uses full viewport */
+  }
 }
